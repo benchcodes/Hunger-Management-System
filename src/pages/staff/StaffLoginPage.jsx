@@ -313,17 +313,6 @@ function StaffLoginPage() {
                                     >
                                         Sign In to Admin Dashboard
                                     </button>
-
-                                    {/* Demo Credentials */}
-                                    <div className={`mt-6 rounded-xl border-2 p-4 ${isDarkMode ? 'border-slate-700/50 bg-slate-900/30' : 'border-slate-200 bg-slate-50'}`}>
-                                        <p className={`text-xs font-semibold uppercase tracking-wider mb-2.5 ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                           Demo Credentials
-                                        </p>
-                                        <div className={`space-y-1.5 text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-                                            <p><span className={`font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>Email:</span> admin@pateros.gov.ph</p>
-                                            <p><span className={`font-semibold ${isDarkMode ? 'text-blue-300' : 'text-blue-700'}`}>Password:</span> admin123</p>
-                                        </div>
-                                    </div>
                                 </form>
                             </article>
                         ) : null}

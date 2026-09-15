@@ -23,7 +23,19 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]',
+        argsIgnorePattern: '^[A-Za-z_]',
+        caughtErrorsIgnorePattern: '^[A-Za-z_]',
+      }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
+  {
+    files: ['backend/**/*.js', 'vite.config.js'],
+    languageOptions: {
+      globals: globals.node,
+      parserOptions: { sourceType: 'commonjs' },
     },
   },
 ])

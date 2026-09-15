@@ -243,13 +243,13 @@ function StaffDashboardPage() {
     },
   ]), [assistedFamilyIds.size, filteredFamilies.length, filteredIndividuals.length, pendingDistributions, staffBarangay, thisMonthCompleted])
 
-  const quickActions = [
+  const _quickActions = [
     { label: 'Add family record', to: '/staff/dashboard', tone: 'bg-blue-600 hover:bg-blue-700' },
     { label: 'View barangay lists', to: '/barangays', tone: 'bg-emerald-600 hover:bg-emerald-700' },
     { label: 'Open reports', to: '/transparency', tone: 'bg-slate-700 hover:bg-slate-600' },
   ]
 
-  const activityFeed = useMemo(() => {
+  const _activityFeed = useMemo(() => {
     if (filteredDistributions.length === 0) {
       return [
         'Checked new family submission from Poblacion',
@@ -582,7 +582,7 @@ function StaffDashboardPage() {
       payload.append('is_npa', '0')
       payload.append('members', JSON.stringify(membersPayload))
 
-      const data = await apiFetch('/api/families', {
+      await apiFetch('/api/families', {
         method: 'POST',
         body: payload,
       })

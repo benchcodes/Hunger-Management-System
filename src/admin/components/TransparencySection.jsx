@@ -310,7 +310,7 @@ export default function TransparencySection({ isDarkMode }) {
   }
 
   const handleExportPDF = () => {
-    const { thisMetrics, lastMetrics, pctChange, trendMonths, trendCounts, trendFamilies, peakMonth, topBarangay, topFood } = analyticsData
+    const { thisMetrics, lastMetrics, pctChange, trendMonths, trendCounts, trendFamilies, peakMonth, topBarangay } = analyticsData
 
     // --- Interpretation logic ---
     const distChange = pctChange(thisMetrics.count, lastMetrics.count)

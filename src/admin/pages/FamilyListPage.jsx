@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { Users, Search, AlertTriangle, Pencil, Trash2 } from 'lucide-react'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import { useAdminAuth } from '../../context/AdminAuthContext'
@@ -9,7 +9,6 @@ import { apiFetch } from '../../api/api'
 function FamilyListPage() {
     const { isDarkMode, toggleDarkMode } = useDarkMode()
     const { isAuthenticated } = useAdminAuth()
-    const navigate = useNavigate()
 
     const [families, setFamilies] = useState([])
     const [loading, setLoading] = useState(true)

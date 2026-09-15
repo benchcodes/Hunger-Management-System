@@ -534,7 +534,7 @@ function handlePost(path, db, body, options = {}) {
     db.users.unshift(created)
     saveDb(db)
 
-    const { password, ...safeUser } = created
+    const { password: _password, ...safeUser } = created
     return { message: 'User registered successfully.', user: safeUser }
   }
 

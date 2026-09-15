@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
 const BARANGAY_DATA_KEY = 'barangay-data'
 
@@ -89,7 +89,7 @@ const barangayProfiles = {
 const BarangayContext = createContext(null)
 
 export function BarangayProvider({ children }) {
-  const [barangayData, setBarangayData] = useState(() => {
+  const [barangayData] = useState(() => {
     if (typeof window === 'undefined') {
       return barangayProfiles
     }
@@ -106,16 +106,16 @@ export function BarangayProvider({ children }) {
     }
   })
 
-  const getAllBarangays = () => {
+  const getAllBarangays = useCallback(() => {
     return Object.keys(barangayData).map((name) => ({
       name,
       ...barangayData[name],
     }))
-  }
+  }, [barangayData])
 
-  const getBarangayData = (barangayName) => {
+  const getBarangayData = useCallback((barangayName) => {
     return barangayData[barangayName] || null
-  }
+  }, [barangayData])
 
   const value = useMemo(
     () => ({
@@ -123,7 +123,7 @@ export function BarangayProvider({ children }) {
       getAllBarangays,
       getBarangayData,
     }),
-    [barangayData],
+    [barangayData, getAllBarangays, getBarangayData],
   )
 
   return (

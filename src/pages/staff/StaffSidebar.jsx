@@ -1,17 +1,13 @@
 import { Home, MapPin, UserPlus, Users, User, Eye, FileText, LogOut } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useStaffAuth } from '../../context/StaffAuthContext'
 
-function StaffSidebar({ isDarkMode }) {
+function StaffSidebar() {
     const { logout, staffUser } = useStaffAuth()
     const navigate = useNavigate()
     const location = useLocation()
     const [selectedNav, setSelectedNav] = useState(() => location.state?.selectedNav || 'Dashboard')
-
-    useEffect(() => {
-        setSelectedNav(location.state?.selectedNav || 'Dashboard')
-    }, [location.pathname, location.state])
 
     const handleLogout = () => {
         logout()

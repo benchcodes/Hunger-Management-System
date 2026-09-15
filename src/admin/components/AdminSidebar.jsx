@@ -1,22 +1,14 @@
 import { Home, MapPin, Users, FileText, LogOut, Menu, X, Gift } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAdminAuth } from '../../context/AdminAuthContext'
 
-function AdminSidebar({ isDarkMode }) {
+function AdminSidebar() {
     const { logout, adminUser } = useAdminAuth()
     const navigate = useNavigate()
     const location = useLocation()
     const [selectedNav, setSelectedNav] = useState(() => location.state?.selectedNav || null)
     const [isOpen, setIsOpen] = useState(false)
-
-    useEffect(() => {
-        setSelectedNav(location.state?.selectedNav || null)
-    }, [location.pathname, location.state])
-
-    useEffect(() => {
-        setIsOpen(false)
-    }, [location.pathname])
 
     const handleLogout = () => {
         logout()

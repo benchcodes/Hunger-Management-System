@@ -3,14 +3,12 @@ import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { apiFetch } from '../../api/api'
 import { useAdminAuth } from '../../context/AdminAuthContext'
-import { useNavigate } from 'react-router-dom'
 import { useDarkMode } from '../../hooks/useDarkMode'
 import BarangayManagementSection from '../components/BarangayManagementSection'
 import TransparencySection from '../components/TransparencySection'
 
 export default function AdminDashboardPage() {
     const { adminUser } = useAdminAuth()
-    const navigate = useNavigate()
     const { isDarkMode, toggleDarkMode } = useDarkMode()
     const [stats, setStats] = useState(null)
     const [statsLoading, setStatsLoading] = useState(true)

@@ -19,8 +19,6 @@ const CAPTAIN_MAP = {
 
 function BarangayDetailLayout({ barangayName }) {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [liveStats, setLiveStats] = useState(null)
   const [profile, setProfile] = useState({
     description: `Community profile for ${barangayName}.`,
@@ -36,8 +34,6 @@ function BarangayDetailLayout({ barangayName }) {
 
   useEffect(() => {
     let mounted = true
-    setLoading(true)
-    setError(null)
 
     Promise.all([
       apiFetch('/api/barangays'),
@@ -154,12 +150,9 @@ function BarangayDetailLayout({ barangayName }) {
           inventoryItems: liveInventory.length > 0 ? liveInventory : null,
         })
 
-        setLoading(false)
       })
       .catch((err) => {
         if (!mounted) return
-        setError(err.message || 'Failed to load barangay data')
-        setLoading(false)
       })
 
     return () => { mounted = false }

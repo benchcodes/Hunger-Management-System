@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS families (
   phone varchar(50),
   monthly_income numeric(12,2),
   food_assistance_status varchar(255) NOT NULL DEFAULT 'None',
-  is_npa smallint NOT NULL DEFAULT 0,
+  is_npa boolean NOT NULL DEFAULT false,
   priority_score integer NOT NULL DEFAULT 0,
-  is_active smallint NOT NULL DEFAULT 1,
+  is_active boolean NOT NULL DEFAULT true,
   image bytea,
   created_at timestamptz NOT NULL DEFAULT now()
 );
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS family_members (
   date_of_birth date,
   gender varchar(20),
   relationship varchar(50) NOT NULL DEFAULT 'Other',
-  is_pwd smallint NOT NULL DEFAULT 0,
+  is_pwd boolean NOT NULL DEFAULT false,
   height_cm numeric(5,2),
   weight_kg numeric(5,2),
   nutritional_status varchar(50) NOT NULL DEFAULT 'Unknown'
@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS donations (
   rejection_reason text,
   payment_method varchar(50),
   donor_message text,
-  is_archived smallint NOT NULL DEFAULT 0,
+  is_archived boolean NOT NULL DEFAULT false,
   archived_at timestamptz,
   archived_by integer
 );

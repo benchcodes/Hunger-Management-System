@@ -264,6 +264,10 @@ function adaptSql(sql) {
   const postgresSql = sql
     .replace(/\?/g, () => `$${++parameterIndex}`)
     .replace(/DATEDIFF\(CURDATE\(\),\s*MAX\(date_given\)\)/gi, '(CURRENT_DATE - MAX(date_given))')
+    .replace(/\bis_active\s*=\s*1\b/gi, 'is_active = TRUE')
+    .replace(/\bis_active\s*=\s*0\b/gi, 'is_active = FALSE')
+    .replace(/\bis_archived\s*=\s*1\b/gi, 'is_archived = TRUE')
+    .replace(/\bis_archived\s*=\s*0\b/gi, 'is_archived = FALSE')
 
   const insertMatch = postgresSql.match(/INSERT\s+INTO\s+([a-z_]+)/i)
   if (insertMatch && !/\bRETURNING\b/i.test(postgresSql)) {
@@ -383,7 +387,7 @@ app.post('/api/families', upload.none(), (req, res) => {
     monthly_income, food_assistance_status, is_npa, priority_score,
   } = req.body
   const monthlyIncomeValue = monthly_income === undefined || monthly_income === null || monthly_income === '' ? null : Number(monthly_income)
-  const isNpaValue = is_npa === 1 || is_npa === '1' || is_npa === true ? 1 : 0
+  const isNpaValue = is_npa === 1 || is_npa === '1' || is_npa === true
   const assistanceStatus = food_assistance_status || 'None'
 
   let members = []
@@ -452,7 +456,7 @@ app.post('/api/families', upload.none(), (req, res) => {
                   m.date_of_birth || null,
                   m.gender || 'Other',
                   m.relationship || 'Other',
-                  m.is_pwd ? 1 : 0,
+                  Boolean(m.is_pwd),
                   m.height_cm !== undefined && m.height_cm !== null && m.height_cm !== '' ? Number(m.height_cm) : null,
                   m.weight_kg !== undefined && m.weight_kg !== null && m.weight_kg !== '' ? Number(m.weight_kg) : null,
                   m.nutritional_status || 'Unknown',
@@ -511,7 +515,7 @@ app.put('/api/families/:id', upload.none(), (req, res) => {
     monthly_income, food_assistance_status, is_npa, priority_score,
   } = req.body
   const monthlyIncomeValue = monthly_income === undefined || monthly_income === null || monthly_income === '' ? null : Number(monthly_income)
-  const isNpaValue = is_npa !== undefined ? (is_npa === 1 || is_npa === '1' || is_npa === true ? 1 : 0) : undefined
+  const isNpaValue = is_npa !== undefined ? (is_npa === 1 || is_npa === '1' || is_npa === true) : undefined
   const priorityScoreValue = priority_score !== undefined && priority_score !== null && priority_score !== '' ? Number(priority_score) : undefined
   const assistanceStatus = food_assistance_status
 
@@ -523,7 +527,7 @@ app.put('/api/families/:id', upload.none(), (req, res) => {
     barangay_id, family_name, address, head_of_family, phone,
     monthlyIncomeValue,
     assistanceStatus ?? 'None',
-    isNpaValue ?? 0,
+    isNpaValue ?? false,
     priorityScoreValue ?? 0,
   ]
 
@@ -572,7 +576,7 @@ app.post('/api/families/:id/members', upload.none(), (req, res) => {
     sql,
     [
       req.params.id, first_name, last_name, date_of_birth || null, gender || 'Other',
-      relationship || 'Other', is_pwd ? 1 : 0, heightValue, weightValue, nutritional_status || 'Unknown',
+      relationship || 'Other', Boolean(is_pwd), heightValue, weightValue, nutritional_status || 'Unknown',
     ],
     (err, results) => {
       if (err) return res.status(500).json({ error: err.message })
@@ -588,7 +592,7 @@ app.put('/api/members/:id', (req, res) => {
   const weightValue = weight_kg !== undefined && weight_kg !== null && weight_kg !== '' ? Number(weight_kg) : null
   db.query(
     `UPDATE family_members SET first_name=?, last_name=?, date_of_birth=?, gender=?, relationship=?, is_pwd=?, height_cm=?, weight_kg=?, nutritional_status=? WHERE member_id=?`,
-    [first_name, last_name, date_of_birth || null, gender || 'Other', relationship || 'Other', is_pwd ? 1 : 0, heightValue, weightValue, nutritional_status || 'Unknown', req.params.id],
+    [first_name, last_name, date_of_birth || null, gender || 'Other', relationship || 'Other', Boolean(is_pwd), heightValue, weightValue, nutritional_status || 'Unknown', req.params.id],
     (err) => {
       if (err) return res.status(500).json({ error: err.message })
       res.json({ message: 'Member updated!' })

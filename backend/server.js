@@ -1,5 +1,5 @@
 const express = require('express')
-const mysql = require('mysql2')
+const { Pool } = require('pg')
 const cors = require('cors')
 const path = require('path')
 const bcrypt = require('bcryptjs')
@@ -25,14 +25,6 @@ app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`)
   next()
 })
-
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT || 3306),
-}
 
 function encodeImage(row) {
   if (!row) return row
@@ -245,14 +237,65 @@ function generateHouseholdId(barangayId, familyId) {
 }
 
 // ─── DB CONNECTION ───────────────────────────────────────────────────────────
-const db = mysql.createPool(dbConfig)
+const databaseUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL
+if (!databaseUrl) {
+  throw new Error('SUPABASE_DB_URL is required for the Supabase backend')
+}
+
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
+})
+
+const insertIdColumns = {
+  families: 'family_id',
+  family_members: 'member_id',
+  individuals: 'individual_id',
+  food_supplies: 'food_id',
+  donors: 'donor_id',
+  donations: 'donation_id',
+  distribution: 'distribution_id',
+  distribution_activity_logs: 'activity_id',
+  users: 'user_id',
+}
+
+function adaptSql(sql) {
+  let parameterIndex = 0
+  const postgresSql = sql
+    .replace(/\?/g, () => `$${++parameterIndex}`)
+    .replace(/DATEDIFF\(CURDATE\(\),\s*MAX\(date_given\)\)/gi, '(CURRENT_DATE - MAX(date_given))')
+
+  const insertMatch = postgresSql.match(/INSERT\s+INTO\s+([a-z_]+)/i)
+  if (insertMatch && !/\bRETURNING\b/i.test(postgresSql)) {
+    const idColumn = insertIdColumns[insertMatch[1].toLowerCase()]
+    if (idColumn) return `${postgresSql} RETURNING ${idColumn}`
+  }
+
+  return postgresSql
+}
+
+const db = {
+  query(sql, params, callback) {
+    if (typeof params === 'function') {
+      callback = params
+      params = []
+    }
+
+    pool.query(adaptSql(sql), params || [], (err, result) => {
+      if (err) return callback(err)
+      const rows = result.rows
+      rows.insertId = rows[0] ? rows[0][Object.keys(rows[0])[0]] : undefined
+      callback(null, rows)
+    })
+  },
+}
 
 db.query('SELECT 1', (err) => {
   if (err) {
-    console.error('❌ Database pool test failed:', err)
+    console.error('❌ Supabase database connection failed:', err)
     return
   }
-  console.log(`✅ Connected to ${process.env.DB_NAME} database at ${process.env.DB_HOST}`)
+  console.log('✅ Connected to Supabase Postgres')
 })
 
 // ─── BARANGAYS ───────────────────────────────────────────────────────────────

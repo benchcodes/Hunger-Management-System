@@ -3,7 +3,7 @@
 Full-stack web app for managing household beneficiary registration, priority scoring, nutritional status tracking, and food distribution records across 10 barangays of Pateros.
 
 - **Frontend:** React 19 + Vite + Tailwind CSS 4 → deployed on Vercel
-- **Backend:** Express.js + MySQL → deployed on Railway
+- **Backend:** Express.js + Supabase Postgres → deployed on Vercel
 - **Live app:** https://phams.vercel.app *(or your Vercel URL)*
 
 ---
@@ -42,7 +42,7 @@ All staff accounts use password **`Staff1234`**.
 | Santo Rosario-Silangan | staff-santo-rosario-silangan@pateros.gov.ph |
 | Tabacalera | staff-tabacalera@pateros.gov.ph |
 
-> These credentials work in both **mock mode** (localhost default) and against the **live Railway backend**.
+> These credentials work in both **mock mode** (localhost default) and against the configured live backend.
 
 ---
 
@@ -56,17 +56,17 @@ No setup required. Just run `npm run dev`. All data is stored in your browser's 
 VITE_USE_MOCK_API=true
 ```
 
-### Live Railway backend
+### Live backend
 To test against the shared production database:
 
 1. Create a `.env` file in the project root:
    ```env
    VITE_USE_MOCK_API=false
-   VITE_API_URL=https://web-production-59ac1.up.railway.app
+   VITE_API_URL=
    ```
-2. Run `npm run dev` — the app now hits Railway instead of mock data.
+2. Run `npm run dev` — the app now hits the configured backend instead of mock data.
 
-> **Note:** `.env` is gitignored. Each team member needs their own copy. Changes you make in this mode affect the shared Railway database.
+> **Note:** `.env` is gitignored. Each team member needs their own copy.
 
 ---
 
@@ -79,13 +79,13 @@ To test against the shared production database:
 
 ---
 
-## Local backend setup (optional — for backend development)
+## Supabase backend setup
 
-> Skip this if you're only working on frontend. Use mock mode or Railway instead.
+> Skip this if you're only working on frontend.
 
 ### Prerequisites
 - Node.js
-- MySQL (local) or Docker
+- A Supabase project
 
 ### Steps
 
@@ -95,28 +95,25 @@ cd backend && npm install
 
 # 2. Set up backend environment
 cp backend/.env.example backend/.env
-# Edit backend/.env with your local MySQL credentials
+# Set SUPABASE_DB_URL in backend/.env
 
-# 3. Create the database
-# In MySQL Workbench or CLI:
-SOURCE backend/schema.sql;
-SOURCE backend/seed.sql;   # optional sample data
+# 3. Run backend/schema.supabase.sql in the Supabase SQL Editor
 
 # 4. Start the backend
-cd backend && npm start    # runs on http://localhost:3000
+cd backend && npm start    # runs on http://localhost:8080
 
 # 5. Start the frontend (in a separate terminal, project root)
 # Create .env in project root:
 # VITE_USE_MOCK_API=false
-# VITE_API_URL=http://localhost:3000
+# VITE_API_URL=http://localhost:8080
 npm run dev
 ```
 
-### Docker (recommended for consistency)
+### Docker (legacy MySQL setup)
 ```bash
 cd backend && docker compose up -d
 ```
-Starts MySQL in a container and initializes it with `schema.sql` and `seed.sql`.
+This legacy setup is retained for local reference. Supabase deployments should use `schema.supabase.sql`.
 
 ---
 
@@ -125,18 +122,17 @@ Starts MySQL in a container and initializes it with `schema.sql` and `seed.sql`.
 | Service | Platform | Notes |
 |---|---|---|
 | Frontend | Vercel | Auto-deploys from `main`. Only `VITE_API_URL` is needed in Vercel environment variables. |
-| Backend + DB | Railway | Two services: Express app + MySQL. Schema initialized once via `backend/schema.sql`. |
+| Backend + DB | Vercel + Supabase | Express API on Vercel and Postgres on Supabase. |
 
 ### Vercel env vars
 ```
-VITE_API_URL=https://web-production-59ac1.up.railway.app
+VITE_API_URL=
 ```
 
-### Railway env vars (backend service)
+### Vercel backend env vars
 ```
-MYSQLHOST, MYSQLPORT, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE
+SUPABASE_DB_URL=postgresql://...
 ```
-Railway injects these automatically when a MySQL service is linked.
 
 ---
 
@@ -152,9 +148,9 @@ src/
   api/                # apiFetch() wrapper, mockApi.js (in-browser DB)
 backend/
   server.js           # Express API
-  schema.sql          # MySQL schema
+  schema.supabase.sql # Supabase Postgres schema
   seed.sql            # Sample data
-  tools/seed_staff.js # Seeds staff accounts to Railway
+  tools/seed_staff.js # Seeds staff accounts to the configured backend
 ```
 
 ---
@@ -171,7 +167,7 @@ Computed from five weighted factors: monthly income vs NCR poverty line (35%), m
 Computed automatically from height + weight using age-appropriate Philippine DOH/NNC classifications (pediatric, adolescent, and adult bands with Asian BMI cutoffs). Staff can override if measurements are unavailable.
 
 ### Multi-Program Enrollment
-Families can be enrolled in multiple programs simultaneously (4Ps, Solo Parent, PWD, Senior Citizen, Pregnant/Lactating). Stored as a MySQL SET field, displayed as checkboxes.
+Families can be enrolled in multiple programs simultaneously (4Ps, Solo Parent, PWD, Senior Citizen, Pregnant/Lactating). Stored as a text field, displayed as checkboxes.
 
 ### Soft Delete
 Records use `is_active = 0` rather than hard delete to preserve distribution history and audit logs.

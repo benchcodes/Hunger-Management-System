@@ -1,6 +1,6 @@
 /**
  * Deletes any existing test staff accounts and registers one staff account
- * per barangay against the live Railway backend.
+ * per barangay against the configured backend.
  *
  * Usage:
  *   node backend/tools/seed_staff.js
@@ -8,7 +8,7 @@
  * Default password for all created staff: Staff1234
  */
 
-const API_URL = 'https://web-production-59ac1.up.railway.app'
+const API_URL = process.env.API_URL
 const PASSWORD = 'Staff1234'
 
 const STAFF = [
@@ -25,8 +25,12 @@ const STAFF = [
 ]
 
 async function main() {
+  if (!API_URL) {
+    throw new Error('API_URL is required, for example: API_URL=http://localhost:3000')
+  }
+
   // ── Step 1: Fetch barangay IDs from the live DB ───────────────────────────
-  console.log('Fetching barangays from Railway...')
+  console.log(`Fetching barangays from ${API_URL}...`)
   const barangays = await fetch(`${API_URL}/api/barangays`).then((r) => r.json())
   const barangayMap = {}
   for (const b of barangays) {

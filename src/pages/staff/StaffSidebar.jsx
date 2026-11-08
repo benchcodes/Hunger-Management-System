@@ -7,7 +7,8 @@ function StaffSidebar() {
     const { logout, staffUser } = useStaffAuth()
     const navigate = useNavigate()
     const location = useLocation()
-    const [selectedNav, setSelectedNav] = useState(() => location.state?.selectedNav || 'Dashboard')
+    // A newly created staff account starts with no menu preselected.
+    const [selectedNav, setSelectedNav] = useState(() => location.state?.selectedNav || null)
 
     const handleLogout = () => {
         logout()

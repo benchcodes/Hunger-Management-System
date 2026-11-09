@@ -98,7 +98,7 @@ cp backend/.env.example backend/.env
 # Set SUPABASE_DB_URL in backend/.env
 
 # 3. Run backend/schema.supabase.sql in the Supabase SQL Editor
-# 4. Run backend/seed.supabase.sql in the Supabase SQL Editor for sample dashboard data
+# 4. Run backend/seed.supabase.sql in the Supabase SQL Editor for 100+ sample dashboard records
 
 # 5. Start the backend
 cd backend && npm start    # runs on http://localhost:8080

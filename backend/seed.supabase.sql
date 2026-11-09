@@ -93,3 +93,94 @@ VALUES
   (3, 3, 'distributed', '2', 'Aguho Staff', 'staff@pateros.gov.ph', 'Distribution #3 - Garcia Family - Magtanggol - Rice (25 kg) - Status: Completed', NOW()),
   (4, 4, 'created', '2', 'Aguho Staff', 'staff@pateros.gov.ph', 'Distribution #4 - Mendoza Family - San Pedro - Canned Goods (10 can) - Status: Pending', NOW())
 ON CONFLICT (activity_id) DO NOTHING;
+
+-- Additional records: 100 families, 200 family members, 100 individuals,
+-- 100 distributions, and matching activity logs.
+INSERT INTO families
+  (family_id, barangay_id, household_id, family_name, address, head_of_family, phone,
+   monthly_income, food_assistance_status, is_npa, priority_score, is_active)
+SELECT
+  n,
+  ((n - 1) % 10) + 1,
+  CONCAT('HH-', LPAD(n::text, 4, '0')),
+  CONCAT((ARRAY['Reyes', 'Cruz', 'Ramos', 'Garcia', 'Mendoza', 'Santos', 'Flores', 'Torres', 'Diaz', 'Lim'])[((n - 1) % 10) + 1], ' Household ', n),
+  CONCAT(n, ' Community Street, Pateros'),
+  CONCAT((ARRAY['Ana', 'Ramon', 'Lourdes', 'Maria', 'Jose', 'Elena', 'Carlos', 'Nena', 'Oscar', 'Teresa'])[((n - 1) % 10) + 1], ' Resident'),
+  CONCAT('0917', LPAD((1000000 + n)::text, 7, '0')),
+  6000 + ((n * 731) % 9001),
+  (ARRAY['4Ps', 'Senior Citizen', 'PWD', 'None', 'Solo Parent'])[((n - 1) % 5) + 1],
+  false,
+  55 + ((n * 17) % 46),
+  true
+FROM generate_series(11, 110) AS series(n)
+ON CONFLICT (family_id) DO NOTHING;
+
+INSERT INTO family_members
+  (member_id, family_id, first_name, last_name, date_of_birth, gender, relationship,
+   is_pwd, height_cm, weight_kg, nutritional_status)
+SELECT
+  (n - 11) * 2 + member_offset + 4,
+  n,
+  (ARRAY['Ana', 'Ben', 'Carla', 'Daniel', 'Emy', 'Felix', 'Grace', 'Hugo', 'Iris', 'Joel'])[((n + member_offset) % 10) + 1],
+  (ARRAY['Reyes', 'Cruz', 'Ramos', 'Garcia', 'Mendoza', 'Santos', 'Flores', 'Torres', 'Diaz', 'Lim'])[((n - 1) % 10) + 1],
+  CURRENT_DATE - ((18 + ((n * member_offset) % 50)) * 365),
+  CASE WHEN member_offset = 1 THEN 'Male' ELSE 'Female' END,
+  CASE WHEN member_offset = 1 THEN 'Head' ELSE 'Child' END,
+  (n % 11 = 0),
+  CASE WHEN member_offset = 1 THEN 165 ELSE 145 END,
+  CASE WHEN member_offset = 1 THEN 62 ELSE 42 END,
+  CASE WHEN n % 7 = 0 THEN 'Underweight' ELSE 'Normal' END
+FROM generate_series(11, 110) AS family_series(n)
+CROSS JOIN generate_series(1, 2) AS member_series(member_offset)
+ON CONFLICT (member_id) DO NOTHING;
+
+INSERT INTO individuals
+  (individual_id, name, date_of_birth, gender, barangay_id, status)
+SELECT
+  n,
+  CONCAT((ARRAY['Pedro', 'Rosa', 'Mario', 'Celia', 'Rogelio', 'Gloria', 'Lito', 'Teresa', 'Nestor', 'Rosario'])[((n - 1) % 10) + 1], ' Individual ', n),
+  CURRENT_DATE - ((40 + (n % 38)) * INTERVAL '1 year'),
+  CASE WHEN n % 2 = 0 THEN 'Female' ELSE 'Male' END,
+  ((n - 1) % 10) + 1,
+  CASE WHEN n % 3 = 0 THEN 'Received' ELSE 'Registered' END
+FROM generate_series(11, 110) AS series(n)
+ON CONFLICT (individual_id) DO NOTHING;
+
+INSERT INTO distribution
+  (distribution_id, recipient_type, family_id, individual_id, barangay_id, food_id,
+   quantity, date_given, status)
+SELECT
+  n - 2,
+  'Family',
+  n,
+  NULL,
+  ((n - 1) % 10) + 1,
+  ((n - 11) % 5) + 1,
+  5 + (n % 26),
+  CURRENT_DATE - (n % 30),
+  CASE WHEN n % 3 = 0 THEN 'Completed' ELSE 'Pending' END
+FROM generate_series(11, 110) AS series(n)
+ON CONFLICT (distribution_id) DO NOTHING;
+
+INSERT INTO distribution_activity_logs
+  (activity_id, distribution_id, action, staff_user_id, staff_name, staff_email,
+   distribution_details, performed_at)
+SELECT
+  n - 6,
+  n - 2,
+  CASE WHEN n % 3 = 0 THEN 'distributed' ELSE 'created' END,
+  '2',
+  'Aguho Staff',
+  'staff@pateros.gov.ph',
+  CONCAT('Distribution #', n - 2, ' - Household ', n, ' - Pateros - Food supply - Status: ',
+    CASE WHEN n % 3 = 0 THEN 'Completed' ELSE 'Pending' END),
+  NOW() - ((n % 30) * INTERVAL '1 day')
+FROM generate_series(11, 110) AS series(n)
+ON CONFLICT (activity_id) DO NOTHING;
+
+-- Keep identity-generated IDs above the explicit seed IDs for future inserts.
+SELECT setval(pg_get_serial_sequence('families', 'family_id'), GREATEST((SELECT MAX(family_id) FROM families), 1));
+SELECT setval(pg_get_serial_sequence('family_members', 'member_id'), GREATEST((SELECT MAX(member_id) FROM family_members), 1));
+SELECT setval(pg_get_serial_sequence('individuals', 'individual_id'), GREATEST((SELECT MAX(individual_id) FROM individuals), 1));
+SELECT setval(pg_get_serial_sequence('distribution', 'distribution_id'), GREATEST((SELECT MAX(distribution_id) FROM distribution), 1));
+SELECT setval(pg_get_serial_sequence('distribution_activity_logs', 'activity_id'), GREATEST((SELECT MAX(activity_id) FROM distribution_activity_logs), 1));

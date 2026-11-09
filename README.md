@@ -98,11 +98,12 @@ cp backend/.env.example backend/.env
 # Set SUPABASE_DB_URL in backend/.env
 
 # 3. Run backend/schema.supabase.sql in the Supabase SQL Editor
+# 4. Run backend/seed.supabase.sql in the Supabase SQL Editor for sample dashboard data
 
-# 4. Start the backend
+# 5. Start the backend
 cd backend && npm start    # runs on http://localhost:8080
 
-# 5. Start the frontend (in a separate terminal, project root)
+# 6. Start the frontend (in a separate terminal, project root)
 # Create .env in project root:
 # VITE_USE_MOCK_API=false
 # VITE_API_URL=http://localhost:8080
